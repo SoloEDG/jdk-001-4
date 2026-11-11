@@ -1,4 +1,4 @@
-import type { CanvasSize } from './types'
+import type { CanvasSize, OnionSkinSettings } from './types'
 
 export const CANVAS_SIZES: CanvasSize[] = [16, 32, 64]
 
@@ -41,3 +41,12 @@ export const STORAGE_KEYS = {
 export const DEFAULT_FRAME_DELAY_MS = 200
 
 export const EXPORT_PIXEL_SCALE = 16
+
+export const MAX_ONION_SKIN_FRAMES = 4
+
+export const DEFAULT_ONION_SKIN: OnionSkinSettings = {
+  enabled: false,
+  prevCount: 2,
+  nextCount: 1,
+  opacity: 0.35,
+}

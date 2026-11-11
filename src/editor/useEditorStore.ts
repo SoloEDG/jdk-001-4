@@ -1,6 +1,12 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { CANVAS_SIZES } from '../core/constants'
 import { exportAllFramesPng, exportFramePng } from '../core/exportPng'
+import {
+  clampOnionCount,
+  clampOnionOpacity,
+  collectOnionGhosts,
+  mergeOnionOverlay,
+} from '../core/onionSkin'
 import { addCustomColor, pushRecentColor } from '../core/paletteService'
 import { compositeLayers } from '../core/pixelGrid'
 import { createProject } from '../core/projectFactory'
@@ -84,6 +90,37 @@ const compositePixels = computed(() => {
   if (!frame) return []
   return compositeLayers(frame.layers, canvasSize.value)
 })
+
+// 洋葱皮虚影仅用于编辑区显示合成：播放/逐帧预览时不叠加，
+// 不参与导出、吸管取色，也不写入项目数据。
+const onionGhosts = computed(() => {
+  const p = activeProject.value
+  if (!p) return []
+  if (isPlaying.value || previewFrameIndex.value !== null) return []
+  return collectOnionGhosts(p.frames, p.activeFrameIndex, prefs.onionSkin, p.canvasSize)
+})
+
+const onionOverlay = computed(() => mergeOnionOverlay(onionGhosts.value, canvasSize.value))
+
+function setOnionEnabled(enabled: boolean) {
+  prefs.onionSkin.enabled = enabled
+  persistPrefs()
+}
+
+function setOnionPrevCount(count: number) {
+  prefs.onionSkin.prevCount = clampOnionCount(count)
+  persistPrefs()
+}
+
+function setOnionNextCount(count: number) {
+  prefs.onionSkin.nextCount = clampOnionCount(count)
+  persistPrefs()
+}
+
+function setOnionOpacity(opacity: number) {
+  prefs.onionSkin.opacity = clampOnionOpacity(opacity)
+  persistPrefs()
+}
 
 watch(
   () => prefs.activeProjectId,
@@ -266,9 +303,15 @@ function buildEditorStore() {
     canvasSize,
     activeFrame,
     compositePixels,
+    onionGhosts,
+    onionOverlay,
     linePending,
     isPlaying,
     previewFrameIndex,
+    setOnionEnabled,
+    setOnionPrevCount,
+    setOnionNextCount,
+    setOnionOpacity,
     setActiveColor,
     setTool,
     setCanvasSize,

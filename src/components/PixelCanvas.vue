@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { overlayCellToCss } from '../core/onionSkin'
 import { useEditorStore } from '../editor/useEditorStore'
 
 const store = useEditorStore()
@@ -9,6 +10,8 @@ const displaySize = computed(() => {
   const cell = Math.floor(Math.min(512 / size, 24))
   return { size, cell, px: size * cell }
 })
+
+const onionActive = computed(() => store.onionGhosts.length > 0)
 
 function onCellClick(x: number, y: number) {
   if (store.isPlaying) return
@@ -21,10 +24,15 @@ function cellStyle(index: number) {
   const x = index % size
   const y = Math.floor(index / size)
   const checker = (x + y) % 2 === 0 ? '#2a2d35' : '#24272e'
-  if (color === null || color === undefined) {
-    return { backgroundColor: checker }
+  if (color !== null && color !== undefined) {
+    return { backgroundColor: color }
   }
-  return { backgroundColor: color }
+  // 真实图层为透明的格子才透出洋葱皮虚影
+  const ghost = store.onionOverlay[index]
+  if (ghost) {
+    return { backgroundColor: overlayCellToCss(ghost) }
+  }
+  return { backgroundColor: checker }
 }
 </script>
 
@@ -34,6 +42,7 @@ function cellStyle(index: number) {
       <span>{{ store.canvasSize }}×{{ store.canvasSize }}</span>
       <span v-if="store.isPlaying" class="badge playing">动画预览中</span>
       <span v-else-if="store.previewFrameIndex !== null" class="badge">预览帧</span>
+      <span v-if="onionActive" class="badge onion">洋葱皮</span>
     </div>
     <div
       class="pixel-grid"

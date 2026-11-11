@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from './constants'
+import { DEFAULT_ONION_SKIN, STORAGE_KEYS } from './constants'
 import { createProject, defaultActiveColor } from './projectFactory'
 import type { EditorPreferences, PixelProject } from './types'
 
@@ -25,11 +25,18 @@ export function saveProjects(projects: PixelProject[]): void {
 }
 
 export function loadPreferences(): EditorPreferences {
-  return readJson<EditorPreferences>(STORAGE_KEYS.preferences, {
+  const defaults: EditorPreferences = {
     activeColor: defaultActiveColor(),
     activeTool: 'brush',
     activeProjectId: null,
-  })
+    onionSkin: { ...DEFAULT_ONION_SKIN },
+  }
+  const stored = readJson<Partial<EditorPreferences>>(STORAGE_KEYS.preferences, {})
+  return {
+    ...defaults,
+    ...stored,
+    onionSkin: { ...defaults.onionSkin, ...(stored.onionSkin ?? {}) },
+  }
 }
 
 export function savePreferences(prefs: EditorPreferences): void {

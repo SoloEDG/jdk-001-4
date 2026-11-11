@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MAX_FRAMES } from '../core/constants'
+import { MAX_FRAMES, MAX_ONION_SKIN_FRAMES } from '../core/constants'
 import { useEditorStore } from '../editor/useEditorStore'
 
 const store = useEditorStore()
@@ -11,6 +11,21 @@ const canAdd = computed(() => frames.value.length < MAX_FRAMES)
 const displayIndex = computed(
   () => store.previewFrameIndex ?? store.activeProject?.activeFrameIndex ?? 0,
 )
+
+const onion = computed(() => store.prefs.onionSkin)
+const onionOpacityPercent = computed(() => Math.round(onion.value.opacity * 100))
+
+function onPrevCountInput(event: Event) {
+  store.setOnionPrevCount(Number((event.target as HTMLInputElement).value))
+}
+
+function onNextCountInput(event: Event) {
+  store.setOnionNextCount(Number((event.target as HTMLInputElement).value))
+}
+
+function onOpacityInput(event: Event) {
+  store.setOnionOpacity(Number((event.target as HTMLInputElement).value) / 100)
+}
 </script>
 
 <template>
@@ -64,5 +79,52 @@ const displayIndex = computed(
     <button type="button" class="action primary" @click="store.togglePlayback">
       {{ store.isPlaying ? '停止播放' : '播放动画' }}
     </button>
+
+    <div class="onion-panel">
+      <label class="onion-toggle">
+        <input
+          type="checkbox"
+          :checked="onion.enabled"
+          @change="store.setOnionEnabled(($event.target as HTMLInputElement).checked)"
+        />
+        洋葱皮预览
+      </label>
+      <template v-if="onion.enabled">
+        <p class="hint">虚影仅用于对照，不会导出或影响取色</p>
+        <label class="onion-field">
+          前几帧
+          <input
+            type="number"
+            min="0"
+            :max="MAX_ONION_SKIN_FRAMES"
+            step="1"
+            :value="onion.prevCount"
+            @change="onPrevCountInput"
+          />
+        </label>
+        <label class="onion-field">
+          后几帧
+          <input
+            type="number"
+            min="0"
+            :max="MAX_ONION_SKIN_FRAMES"
+            step="1"
+            :value="onion.nextCount"
+            @change="onNextCountInput"
+          />
+        </label>
+        <label class="onion-field">
+          透明度 {{ onionOpacityPercent }}%
+          <input
+            type="range"
+            min="5"
+            max="100"
+            step="5"
+            :value="onionOpacityPercent"
+            @input="onOpacityInput"
+          />
+        </label>
+      </template>
+    </div>
   </section>
 </template>

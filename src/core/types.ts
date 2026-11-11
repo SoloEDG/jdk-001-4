@@ -30,8 +30,19 @@ export interface PixelProject {
   updatedAt: number
 }
 
+export interface OnionSkinSettings {
+  enabled: boolean
+  /** 当前帧之前显示的虚影帧数 */
+  prevCount: number
+  /** 当前帧之后显示的虚影帧数 */
+  nextCount: number
+  /** 0.05 - 1，最近邻帧的不透明度，越远越淡 */
+  opacity: number
+}
+
 export interface EditorPreferences {
   activeColor: string
   activeTool: ToolType
   activeProjectId: string | null
+  onionSkin: OnionSkinSettings
 }
